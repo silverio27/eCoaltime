@@ -19,7 +19,7 @@ namespace Posts.Domain.Recipes
             IsDraft = true;
             SetLastModified();
         }
-        protected Post() { }
+
 
         public string Title { get; private set; }
         public string SubTitle { get; private set; }

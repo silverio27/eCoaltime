@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Posts.Api.Recipes
 {
     public record Picture(bool Cover, string Base64image);
-    public record AddPictures(Guid PostId, IList<Picture> Pictures) : IRequest<Response>;
+    public record AddPictures(Guid PostId, Guid AuthorId, IList<Picture> Pictures) : IRequest<Response>;
     public class PicturesValidator : AbstractValidator<AddPictures>
     {
         public PicturesValidator()
@@ -39,7 +39,7 @@ namespace Posts.Api.Recipes
         {
             try
             {
-                var post = await _posts.GetAsync(command.PostId);
+                var post = await _posts.GetAsync(command.PostId, command.AuthorId);
                 if (post is null)
                     return new("O Post a ser atualizado não existe", false);
 
@@ -53,8 +53,7 @@ namespace Posts.Api.Recipes
                     post.AddPicture(photo);
                 }
 
-                _posts.Update(post);
-                await _posts.UnitOfWork.SaveEntitiesAsync(default);
+                await _posts.Update(post);
 
                 return new("Post atualizado");
             }

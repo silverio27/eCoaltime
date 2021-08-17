@@ -5,12 +5,21 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentValidation;
 
 namespace Posts.Api.Recipes
 {
-    public record UpdatePost(Guid PostId, string Title, string SubTitle, string Description) : IRequest<Response>;
-    public record RemovePicture(Guid PostId, Guid PictureId) : IRequest<Response>;
-    public record Publish(Guid PostId) : IRequest<Response>;
+    public record UpdatePost(Guid PostId, Guid AuthorId, string Title, string SubTitle, string Description) : IRequest<Response>;
+    public class UpdatePostValidator : AbstractValidator<UpdatePost>
+    {
+        public UpdatePostValidator()
+        {
+            RuleFor(x => x.PostId).Must(x => x != Guid.Empty).WithMessage("Post inválido.");
+            RuleFor(x => x.AuthorId).Must(x => x != Guid.Empty).WithMessage("Autor inválido.");
+        }
+    }
+    public record RemovePicture(Guid PostId, Guid AuthorId, Guid PictureId) : IRequest<Response>;
+    public record Publish(Guid PostId, Guid AuthorId) : IRequest<Response>;
     public class Update : IRequestHandler<UpdatePost, Response>,
                           IRequestHandler<RemovePicture, Response>,
                           IRequestHandler<Publish, Response>
@@ -23,12 +32,12 @@ namespace Posts.Api.Recipes
         {
             try
             {
-                var post = await _posts.GetAsync(command.PostId);
+                var post = await _posts.GetAsync(command.PostId, command.AuthorId);
                 post.SetTitle(command.Title);
                 post.SetSubTitle(command.SubTitle);
                 post.SetDescription(command.Description);
 
-                await _posts.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _posts.Update(post);
                 return new("Post atualizado");
             }
             catch (Exception e)
@@ -42,11 +51,11 @@ namespace Posts.Api.Recipes
         {
             try
             {
-                var post = await _posts.GetAsync(command.PostId);
+                var post = await _posts.GetAsync(command.PostId, command.AuthorId);
                 var picture = post.Pictures.FirstOrDefault(x => x.Id == command.PictureId);
                 post.RemovePicture(picture);
-                _posts.Update(post);
-                await _posts.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _posts.Update(post);
+
                 return new("Post atualizado");
             }
             catch (Exception e)
@@ -60,10 +69,10 @@ namespace Posts.Api.Recipes
         {
             try
             {
-                var post = await _posts.GetAsync(command.PostId);
+                var post = await _posts.GetAsync(command.PostId, command.AuthorId);
                 post.Publish();
-                _posts.Update(post);
-                await _posts.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _posts.Update(post);
+                
                 return new("Publicado");
             }
             catch (Exception e)

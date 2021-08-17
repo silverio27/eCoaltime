@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Posts.Api.Recipes
 {
-    public record DeletePost(Guid PostId) : IRequest<Response>;
+    public record DeletePost(Guid PostId, Guid AuthorId) : IRequest<Response>;
     public class Delete : IRequestHandler<DeletePost, Response>
     {
         private readonly IPosts _posts;
@@ -22,9 +22,9 @@ namespace Posts.Api.Recipes
         {
             try
             {
-                var post = await _posts.GetAsync(command.PostId);
-                _posts.Delete(post);
-                await _posts.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+                var post = await _posts.GetAsync(command.PostId, command.AuthorId);
+                await _posts.Delete(post);
+
 
                 return new("Post deletado");
             }

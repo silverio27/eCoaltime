@@ -6,6 +6,5 @@ namespace Posts.Domain.SeedWork
     {
         public Guid Id { get; private set; }
         public Entity() => Id = Guid.NewGuid();
-
     }
 }
