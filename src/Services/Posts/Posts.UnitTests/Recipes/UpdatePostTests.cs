@@ -19,16 +19,14 @@ namespace Posts.UnitTests.Recipes
         [Fact]
         public async Task UpdatePostSuccess()
         {
-            _posts.Setup(x => x.UnitOfWork.SaveEntitiesAsync(default))
-                .Returns(Task.FromResult(true));
 
-            Domain.Recipes.Author user = new("img.jpg", "lucas", Guid.NewGuid());
-            Post post = new(user);
-            _posts.Setup(x => x.GetAsync(post.Id))
+            Domain.Recipes.Author author = new("img.jpg", "lucas", Guid.NewGuid());
+            Post post = new(author);
+            _posts.Setup(x => x.GetAsync(post.Id, author.UserId))
                 .Returns(Task.FromResult(post));
 
             var handler = new Update(_posts.Object);
-            UpdatePost command = new(post.Id, "Salmão", "Salmão grelhado", "Muito gostoso");
+            UpdatePost command = new(post.Id, author.UserId, "Salmão", "Salmão grelhado", "Muito gostoso");
             var response = await handler.Handle(command, default);
             Assert.True(response.Success);
         }
@@ -36,11 +34,8 @@ namespace Posts.UnitTests.Recipes
         [Fact]
         public async Task UpdatePostFailed()
         {
-            _posts.Setup(x => x.UnitOfWork.SaveEntitiesAsync(default))
-                .Returns(Task.FromResult(true));
-
             var handler = new Update(_posts.Object);
-            UpdatePost command = new(Guid.Empty, "Salmão", "Salmão grelhado", "Muito gostoso");
+            UpdatePost command = new(Guid.Empty, Guid.NewGuid(), "Salmão", "Salmão grelhado", "Muito gostoso");
             var response = await handler.Handle(command, default);
             Assert.False(response.Success);
         }

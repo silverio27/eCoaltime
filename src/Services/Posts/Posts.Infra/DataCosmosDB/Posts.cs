@@ -1,6 +1,4 @@
 ﻿using Posts.Domain.Recipes;
-using Posts.Domain.SeedWork;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;

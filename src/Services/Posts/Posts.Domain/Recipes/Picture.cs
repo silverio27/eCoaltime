@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Posts.Domain.SeedWork;
 using System;
 
@@ -14,10 +15,14 @@ namespace Posts.Domain.Recipes
             PictureName = pictureName;
         }
         protected Picture() { }
-        public Guid PostId { get; private set; }
         public bool Cover { get; private set; }
         public string PictureName { get; private set; }
         public void MarkAsCover() => Cover = true;
         public void MarkAsNotCover() => Cover = false;
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
     }
 }

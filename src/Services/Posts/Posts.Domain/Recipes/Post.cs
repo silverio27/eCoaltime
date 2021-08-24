@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Posts.Domain.SeedWork;
 using System;
 using System.Collections.Generic;
@@ -20,16 +21,24 @@ namespace Posts.Domain.Recipes
             SetLastModified();
         }
 
-
+        [JsonProperty("title")]
         public string Title { get; private set; }
+        [JsonProperty("subTitle")]
         public string SubTitle { get; private set; }
+        [JsonProperty("description")]
         public string Description { get; private set; }
+        [JsonProperty("author")]
         public Author Author { get; private set; }
         private readonly List<Picture> _pictures;
+        [JsonProperty("pictures")]
         public IReadOnlyCollection<Picture> Pictures => _pictures;
+        [JsonProperty("isDraft")]
         public bool IsDraft { get; private set; }
+        [JsonIgnore]
         public const int MaximumPictures = 5;
+        [JsonProperty("lastModified")]
         public DateTime LastModified { get; private set; }
+        [JsonProperty("PublishedAt")]
         public DateTime? PublishedAt { get; private set; }
 
         public void SetTitle(string title)
@@ -89,5 +98,10 @@ namespace Posts.Domain.Recipes
             _pictures.Any();
 
         private void SetLastModified() => LastModified = DateTime.Now;
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
     }
 }

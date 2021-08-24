@@ -38,7 +38,7 @@ namespace Posts.Api.Recipes
                   order by c.lastModified desc
                   offset @offset limit @limit")
                 .WithParameter("@authorId", parameters.AuthorId)
-                .WithParameter("@offset", parameters.PageNumber)
+                .WithParameter("@offset", parameters.PageNumber -1)
                 .WithParameter("@limit", parameters.PageSize);
 
             using FeedIterator<Post> resultSetIterator = _container.GetItemQueryIterator<Post>(query, requestOptions: options);
@@ -47,8 +47,9 @@ namespace Posts.Api.Recipes
                 FeedResponse<Post> responseList = await resultSetIterator.ReadNextAsync();
                 results.AddRange(responseList);
             }
+            var resultsView = results.Select(x => x.ToView(urlBase)).ToList();
 
-            var response = new PagedList<Post>(results, count, parameters.PageNumber, parameters.PageSize);
+            var response = new PagedList<dynamic>(resultsView, count, parameters.PageNumber, parameters.PageSize);
 
             return response;
         }
