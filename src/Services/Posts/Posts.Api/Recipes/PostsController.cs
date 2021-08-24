@@ -80,18 +80,18 @@ namespace Posts.Api.Recipes
             return BadRequest(result);
         }
 
-        [HttpDelete("{postId:Guid}")]
-        public async Task<ActionResult> RemovePost(Guid postId)
+        [HttpDelete("{postId:Guid}/{authorId:Guid}")]
+        public async Task<ActionResult> RemovePost(Guid postId, Guid authorId)
         {
-            var result = await _mediator.Send(new DeletePost(postId));
+            var result = await _mediator.Send(new DeletePost(postId, authorId));
             if (result.Success) return NoContent();
             return BadRequest(result);
         }
 
-        [HttpGet("{postId:Guid}")]
-        public async Task<ActionResult> GetPostAsync(Guid postId)
+        [HttpGet("{postId:Guid}/{authorId:Guid}")]
+        public async Task<ActionResult> GetPostAsync(Guid postId, Guid authorId)
         {
-            var post = await _posts.GetAsync(postId);
+            var post = await _posts.GetAsync(postId, authorId);
             if (post is null)
                 return NotFound();
 
@@ -100,7 +100,7 @@ namespace Posts.Api.Recipes
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetPosts([FromQuery] PaginateParameters parameters)
+        public async Task<ActionResult> GetPosts([FromQuery] PaginatePost parameters)
         {
             var posts = await _queries.Get(parameters, _pictureSettings.UrlBase);
             if (posts is null)

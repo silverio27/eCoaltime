@@ -1,24 +1,26 @@
 ﻿using Posts.Domain.Recipes;
-using Posts.Domain.SeedWork;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 
 namespace Posts.Infra.DataCosmosDB
 {
     public class Posts : IPosts
     {
-        private readonly PostsContext _context;
+        private readonly Container _container;
 
-        public Posts(PostsContext context) => _context = context;
-        public IUnitOfWork UnitOfWork => _context;
+        public Posts(CosmosClient cosmosClient, string databaseName, string containerName)
+        {
+            _container = cosmosClient.GetContainer(databaseName, containerName);
+        }
 
-        public Post Add(Post post) => _context.Add(post).Entity;
+        public async Task<Post> Add(Post post) => await _container.CreateItemAsync(post, new PartitionKey(post.Author.UserId.ToString()));
 
-        public void Delete(Post post) => _context.Remove(post);
+        public async Task Delete(Post post) => await _container.DeleteItemAsync<Post>(post.Id.ToString(), new(post.Author.UserId.ToString()));
 
-        public Task<Post> GetAsync(Guid postId) => _context.Posts.FirstOrDefaultAsync(x => x.Id == postId);
+        public async Task<Post> GetAsync(Guid postId, Guid authorId) => (await _container
+            .ReadItemAsync<Post>(postId.ToString(), new(authorId.ToString()))).Resource;
 
-        public void Update(Post post) => _context.Posts.Update(post);
+        public async Task Update(Post post) => await _container.UpsertItemAsync(post, new(post.Author.UserId.ToString()));
     }
 }

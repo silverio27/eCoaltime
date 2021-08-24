@@ -9,6 +9,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.Extensions.Hosting;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace Posts.FunctionalTests
 {
@@ -17,11 +20,20 @@ namespace Posts.FunctionalTests
         private readonly HttpClient _client;
         public Scenario()
         {
+            var environment = "Development";
+            var directory = Directory.GetCurrentDirectory();
+            var configurationBuilder = new ConfigurationBuilder()
+                .SetBasePath(directory)
+                .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{environment}.json");
+
             var server = new TestServer(new WebHostBuilder()
-                .UseEnvironment("Development")
+                .UseEnvironment(environment)
+                .UseConfiguration(configurationBuilder.Build())
                 .UseStartup<Startup>());
             _client = server.CreateClient();
         }
+
         [Fact]
         public async Task DraftSuccess()
         {

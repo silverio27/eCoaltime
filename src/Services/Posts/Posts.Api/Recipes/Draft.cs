@@ -32,9 +32,7 @@ namespace Posts.Api.Recipes
 
                 Post post = new(author);
 
-                _posts.Add(post);
-
-                await _posts.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+                await _posts.Add(post);
 
                 return new Response(Message: "Rascunho criado.", Data: post);
             }
